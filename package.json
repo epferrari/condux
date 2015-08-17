@@ -1,0 +1,26 @@
+{
+  "name": "reflux-nexus",
+  "version": "0.0.1",
+  "description": "An over-the-wire implementation of Reflux.js using Sock.js",
+  "main": "RefluxNexus.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://epferrari@github.com/epferrari/reflux-nexus.git"
+  },
+  "keywords": [
+    "Reflux",
+    "React",
+    "websocket",
+    "bi-directional",
+    "Sockjs"
+  ],
+  "author": "Ethan Ferrari",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/epferrari/reflux-nexus/issues"
+  },
+  "homepage": "https://github.com/epferrari/reflux-nexus#readme"
+}

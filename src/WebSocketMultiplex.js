@@ -17,9 +17,7 @@
 				this._ensure(type);
 				var args = Array.prototype.slice.call(arguments, 1);
 				if(this['on' + type]) this['on' + type].apply(this, args);
-				for(var i = 0; i < this._listeners[type].length; i++) {
-						this._listeners[type][i].apply(this, args);
-				}
+				this._listeners[type].forEach( listener => listener.apply(this,args));
 		};
 
 		// ****
@@ -54,7 +52,7 @@
 
 		// ****
 
-export default function WebSocketMultiplex(ws) {
+function WebSocketMultiplex(ws) {
 	this.ws = ws;
 	this.channels = {};
 	this.ws.addEventListener('message', (e) => {
@@ -78,3 +76,5 @@ WebSocketMultiplex.prototype.channel = function(rawName) {
 	this.channels[global.escape(rawName)] = newChannel;
 	return newChannel;
 };
+
+export default WebSocketMultiplex;

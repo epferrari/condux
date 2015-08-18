@@ -52,7 +52,7 @@ _ServerNexus.prototype = {
 	*/
 	createActions(actionNames){
 		return actionNames.reduce((accum,actionName) => {
-			accum[actionName] = _ServerNexus.prototype.createAction.apply(this,actionName);
+			accum[actionName] = _ServerNexus.prototype.createAction.apply(this,[actionName]);
 			return accum;
 		},{});
 	},
@@ -95,7 +95,7 @@ _ServerNexus.prototype = {
 
 		return cell;
 	},
-	
+
 	attach(server,prefix){
 		this.service.installHandlers(server,{prefix: prefix || '/reflux-nexus' });
 	}

@@ -11,7 +11,7 @@ var isFunction = _require.isFunction;
 var pull = _require.pull;
 
 var sockjs = require('sockjs');
-var webSocketMplex = require('websocket-multiplex');
+var Multiplexer = require('websocket-multiplex');
 
 /**
 * A singleton multiplexing websocket service for Reflux using sockjs
@@ -27,21 +27,38 @@ var webSocketMplex = require('websocket-multiplex');
 function _ServerNexus(service, multiplexer) {
 	var _this = this;
 
-	this._registeredActions = {};
+	this.registered_actions = {};
 	this.service = service;
-	this.multiplexer = multiplexer || new webSocketMplex.MultiplexServer(this.service);
-	this.CLIENT_ACTION_CHANNEL = this.multiplexer.registerChannel('NEXUS_CLIENT_ACTIONS');
+	this.multiplexer = multiplexer || new Multiplexer.MultiplexServer(this.service);
+	this.CLIENT_ACTION_CHANNEL = this.multiplexer.registerChannel('CLIENT_NEXUS_ACTIONS');
 	this.CLIENT_ACTION_CHANNEL.on('connection', function (conn) {
 		conn.on('data', function (data) {
 			data = JSON.parse(data);
-			var action = undefined;
+			var action;
+			var actionType = data.actionType;
+			if (actionType === "REGISTER_CLIENT_CHANNEL") _this.registerChannel(data.payload.topic);
 			// set off Reflux action on any matching action from the client
-			if (action = _this._registeredActions[data.actionType]) action(data.payload);
+			else if (action = _this.registered_actions[actionType]) action(data.payload);
 		});
 	});
 }
 
 _ServerNexus.prototype = {
+
+	// dummy
+	onNewChannel: function onNewChannel(topic) {
+		return;
+	},
+
+	registerChannel: function registerChannel(topic) {
+		var channels = this.multiplexer.registered_channels;
+		if (!channels[topic]) {
+			this.multiplexer.registerChannel(topic);
+			this.onNewChannel(topic);
+		}
+		return channels[topic];
+	},
+
 	/**
  * wrapper for Reflux.createAction() that ensures actions are registered with the
  * Nexus instance. Each ServerNexus instance acts as a Dispatch for all client actions
@@ -52,7 +69,7 @@ _ServerNexus.prototype = {
  */
 	createAction: function createAction(actionName, options) {
 		var action = Reflux.createAction(options);
-		this._registeredActions[actionName] = action;
+		this.registered_actions[actionName] = action;
 		return action;
 	},
 
@@ -64,50 +81,50 @@ _ServerNexus.prototype = {
 		var _this2 = this;
 
 		return actionNames.reduce(function (accum, actionName) {
-			accum[actionName] = _ServerNexus.prototype.createAction.apply(_this2, [actionName]);
+			accum[actionName] = _this2.createAction(actionName);
 			return accum;
 		}, {});
 	},
 
-	Cell: function Cell(channel, storeDefinition) {
-		var cell = {};
-		var store = cell.store = Reflux.createStore(storeDefinition);
-		isFunction(store.hydrate) || (store.hydrate = function () {
+	cell: function cell(topic, storeDefinition) {
+
+		var connections, channel, store, _emit;
+
+		store = Reflux.createStore(storeDefinition);
+		isFunction(store.bootstrap) || (store.bootstrap = function () {
 			return {};
 		});
 
-		cell.connections = [];
-		cell.channel = this.multiplexer.registerChannel(channel);
-		cell.channel.on('connection', function (conn) {
+		connections = [];
+		channel = Nexus.registerChannel(topic);
+		channel.on('connection', function (conn) {
 			// hydrate the client with an initial dataset, if `hydrate` is defined
-			conn.write(JSON.stringify(store.hydrate()));
+			conn.write(JSON.stringify(store.bootstrap()));
 			// add connection to connection collection
-			cell.connections.push(conn);
+			connections.push(conn);
 			// cleanup store listener on close of connection
 			conn.on('close', function () {
-				pull(cell.connections, conn);
+				return pull(connections, conn);
 			});
 		});
 
 		// cache original emit method
-		var _emit = store.emitter.emit;
+		_emit = store.emitter.emit;
 
 		// overwrite the Reflux Store's emitter to send messages to client on `trigger`
-		store.emitter.emit = function (event, outbound) {
-			Promise.all(cell.connections.map(function (c) {
+		store.emitter.emit = function (eventLabel, outbound) {
+			Promise.all(connections.map(function (conn) {
 				return new Promise(function (resolve) {
 					// notify clients on trigger
-					if (event === store.eventLabel) {
-						c.write(JSON.stringify(outbound[0]));
-					}
+					conn.write(JSON.stringify(outbound[0]));
 					// notify other Reflux Stores on the server
-					_emit.apply(store.emitter, [].concat('change', outbound));
+					_emit.apply(store.emitter, [].concat(eventLabel, outbound));
 					resolve();
 				});
 			}));
 		};
 
-		return cell;
+		return store;
 	},
 
 	attach: function attach(server, prefix) {

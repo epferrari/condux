@@ -7,7 +7,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"clean":"rm -rf ./lib/*",
 		"predist":"npm run clean",
-		"dist": "mkdir -p ./lib && babel ./src -d ./lib"
+		"dist": "babel ./src/Server.js -o ./reflux-nexus.js"
 	},
 	"repository": {
 		"type": "git",

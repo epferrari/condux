@@ -1,7 +1,7 @@
 var Reflux = require('reflux');
 var {isFunction,pull} = require('lodash');
 var sockjs = require('sockjs');
-var webSocketMplex = require('websocket-multiplex');
+var Multiplexer = require('websocket-multiplex');
 
 
 /**
@@ -15,23 +15,39 @@ var webSocketMplex = require('websocket-multiplex');
 * @param {obj} multiplexer - websocket-multiplexer
 */
 
-function _ServerNexus(service,multiplexer){
-	this._registeredActions = {};
+function _ServerNexus(service, multiplexer) {
+	this.registered_actions = {};
 	this.service = service;
-	this.multiplexer = multiplexer || new webSocketMplex.MultiplexServer(this.service);
-	this.CLIENT_ACTION_CHANNEL = this.multiplexer.registerChannel('NEXUS_CLIENT_ACTIONS');
-	this.CLIENT_ACTION_CHANNEL.on('connection', conn => {
-		conn.on('data', data => {
+	this.multiplexer = multiplexer || new Multiplexer.MultiplexServer(this.service);
+	this.CLIENT_ACTION_CHANNEL = this.multiplexer.registerChannel('CLIENT_NEXUS_ACTIONS');
+	this.CLIENT_ACTION_CHANNEL.on('connection',(conn) => {
+		conn.on('data',(data) => {
 			data = JSON.parse(data);
-			let action;
+			var action;
+			var actionType = data.actionType;
+			if(actionType === "REGISTER_CLIENT_CHANNEL") this.registerChannel(data.payload.topic);
 			// set off Reflux action on any matching action from the client
-			if(action = this._registeredActions[data.actionType]) action(data.payload);
+			else if (action = this.registered_actions[actionType]) action(data.payload);
 		});
 	});
 }
 
-
 _ServerNexus.prototype = {
+
+	// dummy
+	onNewChannel(topic){
+		return;
+	},
+
+	registerChannel(topic){
+		let channels = this.multiplexer.registered_channels;
+		if(!channels[topic]){
+			this.multiplexer.registerChannel(topic);
+			this.onNewChannel(topic);
+		}
+		return channels[topic];
+	},
+
 	/**
 	* wrapper for Reflux.createAction() that ensures actions are registered with the
 	* Nexus instance. Each ServerNexus instance acts as a Dispatch for all client actions
@@ -40,9 +56,9 @@ _ServerNexus.prototype = {
 	* @param {string} actionName
 	* @param {object} options - Reflux action options object
 	*/
-	createAction(actionName,options){
+	createAction(actionName, options) {
 		var action = Reflux.createAction(options);
-		this._registeredActions[actionName] = action;
+		this.registered_actions[actionName] = action;
 		return action;
 	},
 
@@ -50,62 +66,61 @@ _ServerNexus.prototype = {
 	* wrapper for Reflux.createActions() that ensures each Action has a `nxs_id` property
 	* @param {array} actionNames
 	*/
-	createActions(actionNames){
-		return actionNames.reduce((accum,actionName) => {
-			accum[actionName] = _ServerNexus.prototype.createAction.apply(this,[actionName]);
+	createActions(actionNames) {
+		return actionNames.reduce((accum, actionName) => {
+			accum[actionName] = this.createAction(actionName);
 			return accum;
 		},{});
 	},
 
-	Cell(channel,storeDefinition){
-		var cell = {};
-		var store = cell.store = Reflux.createStore(storeDefinition);
-		isFunction(store.hydrate) || (store.hydrate = function(){return {}; });
+	cell(topic,storeDefinition) {
 
-		cell.connections = [];
-		cell.channel = this.multiplexer.registerChannel(channel);
-		cell.channel.on('connection',function(conn){
+		var connections,channel,store,_emit;
+
+		store = Reflux.createStore(storeDefinition);
+		isFunction(store.bootstrap) || (store.bootstrap = function() {
+			return {};
+		});
+
+		connections = [];
+		channel = Nexus.registerChannel(topic);
+		channel.on('connection', (conn) => {
 			// hydrate the client with an initial dataset, if `hydrate` is defined
-			conn.write( JSON.stringify(store.hydrate()) );
+			conn.write(JSON.stringify(store.bootstrap()));
 			// add connection to connection collection
-			cell.connections.push(conn);
+			connections.push(conn);
 			// cleanup store listener on close of connection
-			conn.on('close',function(){
-				pull(cell.connections,conn);
-			});
+			conn.on( 'close', () => pull(connections, conn) );
 		});
 
 		// cache original emit method
-		var _emit = store.emitter.emit;
+		_emit = store.emitter.emit;
 
 		// overwrite the Reflux Store's emitter to send messages to client on `trigger`
-		store.emitter.emit = function(event,outbound){
-			Promise.all(cell.connections.map(function(c){
-				return new Promise(function(resolve){
+		store.emitter.emit = (eventLabel, outbound) => {
+			Promise.all(connections.map(function (conn) {
+				return new Promise(function(resolve) {
 					// notify clients on trigger
-					if(event === store.eventLabel){
-						c.write(JSON.stringify(outbound[0]));
-					}
+					conn.write(JSON.stringify(outbound[0]));
 					// notify other Reflux Stores on the server
-					_emit.apply(store.emitter,[].concat('change',outbound));
+					_emit.apply(store.emitter, [].concat(eventLabel,outbound));
 					resolve();
 				});
 			}));
 		};
 
-		return cell;
+		return store;
 	},
 
-	attach(server,prefix){
-		this.service.installHandlers(server,{prefix: prefix || '/reflux-nexus' });
+	attach(server, prefix) {
+		this.service.installHandlers(server, { prefix: prefix || '/reflux-nexus' });
 	}
 };
-
 
 /**
 * wrapper that creates a new Nexus with a new sockjs service and a new multiplexer
 */
-function ServerNexus(){
+function ServerNexus() {
 	var service = sockjs.createServer();
 	return new _ServerNexus(service);
 }
@@ -114,9 +129,8 @@ function ServerNexus(){
 * use Adapter when your app already has a sockjs service
 *	and possibly an existing multiplex instance
 */
-ServerNexus.Adapter = function Adapter(service,multiplexer){
-	return new _ServerNexus(service,multiplexer);
+ServerNexus.Adapter = function Adapter(service, multiplexer) {
+	return new _ServerNexus(service, multiplexer);
 };
-
 
 export default ServerNexus;

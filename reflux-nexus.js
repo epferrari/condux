@@ -96,7 +96,7 @@ _ServerNexus.prototype = {
 		});
 
 		connections = [];
-		channel = Nexus.registerChannel(topic);
+		channel = this.registerChannel(topic);
 		channel.on('connection', function (conn) {
 			// hydrate the client with an initial dataset, if `hydrate` is defined
 			conn.write(JSON.stringify(store.bootstrap()));

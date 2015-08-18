@@ -2,7 +2,7 @@
 	"name": "reflux-nexus",
 	"version": "0.0.1",
 	"description": "An over-the-wire implementation of Reflux.js using Sock.js",
-	"main": "index.js",
+	"main": "reflux-nexus.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"clean":"rm -rf ./lib/*",

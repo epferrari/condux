@@ -32,7 +32,7 @@ ClientNexus.createActions = function(actionNames){
 	},{});
 };
 
-ClientNexus.Channel = function Channel(name){
+function Channel(name){
 	this.channelName = name;
 	this.sock = mplex.channel(name);
 	this.subscribers = {};
@@ -59,6 +59,7 @@ Channel.prototype.removeListener = function(token){
 	this.subscribers[token] = null;
 };
 
+ClientNexus.Channel = Channel;
 
 
 function listenToChannel(channel,handler){

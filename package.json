@@ -5,6 +5,8 @@
 	"main": "reflux-nexus.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
+		"lint":"eslint ./src --ext .js",
+		"preclean":"npm run lint",
 		"clean":"rm -rf ./lib/*",
 		"predist":"npm run clean",
 		"dist": "babel ./src/Server.js -o ./reflux-nexus.js"

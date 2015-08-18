@@ -1,5 +1,5 @@
 var Reflux = require('reflux');
-var {isFunction,pull} = require('lodash');
+var {isFunction,pull,merge} = require('lodash');
 var sockjs = require('sockjs');
 var Multiplexer = require('websocket-multiplex');
 
@@ -12,7 +12,7 @@ var Multiplexer = require('websocket-multiplex');
 * `ClientNexus.createAction` and `ClientNexus.createActions`
 *
 * @param {obj} service - sockjs service
-* @param {obj} multiplexer - websocket-multiplexer
+* @param {obj} [multiplexer] - websocket-multiplexer
 */
 
 function _ServerNexus(service, multiplexer) {
@@ -63,7 +63,7 @@ _ServerNexus.prototype = {
 	},
 
 	/**
-	* wrapper for Reflux.createActions() that ensures each Action has a `nxs_id` property
+	* wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
 	* @param {array} actionNames
 	*/
 	createActions(actionNames) {
@@ -112,16 +112,20 @@ _ServerNexus.prototype = {
 		return store;
 	},
 
-	attach(server, prefix) {
-		this.service.installHandlers(server, { prefix: prefix || '/reflux-nexus' });
+	/**
+	* @desc convenience method for `this.service.installHandlers(server,options)`
+	*/
+	attach(server,options) {
+		this.service.installHandlers(server,options);
 	}
 };
 
 /**
-* wrapper that creates a new Nexus with a new sockjs service and a new multiplexer
+* wrapper that will create a new Nexus with a new sockjs service and a new multiplexer
 */
-function ServerNexus() {
-	var service = sockjs.createServer();
+function ServerNexus(options) {
+	options = merge({},{sockjs_url: 'http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js',prefix: "/reflux-nexus"},options);
+	var service = sockjs.createServer(options);
 	return new _ServerNexus(service);
 }
 

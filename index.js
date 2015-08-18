@@ -1,4 +1,4 @@
 
-module.exports.Server = require('./lib/RefluxNexus.js');
-module.exports.Client = require('./lib/RefluxNexus.Client.js');
-module.exports.Multiplex = require('./lib/RefluxNexus.WebSocketMultiplex.js');
+module.exports.Server = require('./lib/Server.js');
+module.exports.Client = require('./lib/Client.js');
+module.exports.Multiplex = require('./lib/WebSocketMultiplex.js');

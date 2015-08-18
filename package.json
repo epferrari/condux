@@ -1,38 +1,40 @@
 {
-  "name": "reflux-nexus",
-  "version": "0.0.1",
-  "description": "An over-the-wire implementation of Reflux.js using Sock.js",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dist": "mkdir -p ./lib && babel ./src -d ./lib"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://epferrari@github.com/epferrari/reflux-nexus.git"
-  },
-  "keywords": [
-    "Reflux",
-    "React",
-    "websocket",
-    "bi-directional",
-    "Sockjs"
-  ],
-  "author": "Ethan Ferrari",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/epferrari/reflux-nexus/issues"
-  },
-  "homepage": "https://github.com/epferrari/reflux-nexus#readme",
-  "devDependencies": {
-    "babel": "^5.8.21",
-    "babel-eslint": "^4.0.10",
-    "eslint": "^1.1.0"
-  },
-  "dependencies": {
-    "lodash": "^3.10.1",
-    "sockjs": "^0.3.15",
-    "sockjs-client": "^1.0.3",
-    "websocket-multiplex": "^0.1.0"
-  }
+	"name": "reflux-nexus",
+	"version": "0.0.1",
+	"description": "An over-the-wire implementation of Reflux.js using Sock.js",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"clean":"rm -rf ./lib/*",
+		"predist":"npm run clean",
+		"dist": "mkdir -p ./lib && babel ./src -d ./lib"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://epferrari@github.com/epferrari/reflux-nexus.git"
+	},
+	"keywords": [
+		"Reflux",
+		"React",
+		"websocket",
+		"bi-directional",
+		"Sockjs"
+	],
+	"author": "Ethan Ferrari",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/epferrari/reflux-nexus/issues"
+	},
+	"homepage": "https://github.com/epferrari/reflux-nexus#readme",
+	"devDependencies": {
+		"babel": "^5.8.21",
+		"babel-eslint": "^4.0.10",
+		"eslint": "^1.1.0"
+	},
+	"dependencies": {
+		"lodash": "^3.10.1",
+		"sockjs": "^0.3.15",
+		"sockjs-client": "^1.0.3",
+		"websocket-multiplex": "^0.1.0"
+	}
 }

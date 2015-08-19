@@ -101,7 +101,7 @@ _ServerNexus.prototype = {
 			Promise.all(connections.map(function (conn) {
 				return new Promise(function(resolve) {
 					// notify clients on trigger
-					conn.write(JSON.stringify(outbound[0]));
+					conn.write(JSON.stringify(outbound));
 					// notify other Reflux Stores on the server
 					_emit.apply(store.emitter, [].concat(eventLabel,outbound));
 					resolve();

@@ -37,7 +37,7 @@ function _ServerNexus(service, multiplexer) {
 			data = JSON.parse(data);
 			var action;
 			var actionType = data.actionType;
-			if (actionType === "REGISTER_CLIENT_CHANNEL") _this.registerChannel(data.payload.topic);
+			if (actionType === "REGISTER_FREQUENCY") _this.registerChannel(data.payload.topic);
 			// set off Reflux action on any matching action from the client
 			else if (action = _this.registered_actions[actionType]) action(data.payload);
 		});
@@ -117,7 +117,7 @@ _ServerNexus.prototype = {
 			Promise.all(connections.map(function (conn) {
 				return new Promise(function (resolve) {
 					// notify clients on trigger
-					conn.write(JSON.stringify(outbound[0]));
+					conn.write(JSON.stringify(outbound));
 					// notify other Reflux Stores on the server
 					_emit.apply(store.emitter, [].concat(eventLabel, outbound));
 					resolve();

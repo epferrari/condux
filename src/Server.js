@@ -25,7 +25,7 @@ function _ServerNexus(service, multiplexer) {
 			data = JSON.parse(data);
 			var action;
 			var actionType = data.actionType;
-			if(actionType === "REGISTER_CLIENT_CHANNEL") this.registerChannel(data.payload.topic);
+			if(actionType === "REGISTER_FREQUENCY") this.registerChannel(data.payload.topic);
 			// set off Reflux action on any matching action from the client
 			else if (action = this.registered_actions[actionType]) action(data.payload);
 		});

@@ -19,15 +19,23 @@ function _ServerNexus(service, multiplexer) {
 	this.registered_actions = {};
 	this.service = service;
 	this.multiplexer = multiplexer || new Multiplexer.MultiplexServer(this.service);
-	this.CLIENT_ACTION_CHANNEL = this.multiplexer.registerChannel('CLIENT_NEXUS_ACTIONS');
-	this.CLIENT_ACTION_CHANNEL.on('connection',(conn) => {
+
+	this.REGISTRATION_REQUESTS = this.multiplexer.registerChannel('REGISTRATION_REQUESTS');
+	this.REGISTRATION_REQUESTS.on("connection",(conn) => {
+		conn.on('data', (data) => {
+			this.registerChannel(data.topic);
+			conn.write({topic:data.topic, status:"approved"});
+		});
+	});
+
+	this.CLIENT_ACTIONS = this.multiplexer.registerChannel('CLIENT_ACTIONS');
+	this.CLIENT_ACTIONS.on('connection',(conn) => {
 		conn.on('data',(data) => {
 			data = JSON.parse(data);
 			var action;
 			var actionType = data.actionType;
-			if(actionType === "REGISTER_FREQUENCY") this.registerChannel(data.payload.topic);
 			// set off Reflux action on any matching action from the client
-			else if (action = this.registered_actions[actionType]) action(data.payload);
+			if(action = this.registered_actions[actionType]) action(data.payload);
 		});
 	});
 }
@@ -97,13 +105,13 @@ _ServerNexus.prototype = {
 		_emit = store.emitter.emit;
 
 		// overwrite the Reflux Store's emitter to send messages to client on `trigger`
-		store.emitter.emit = (eventLabel, outbound) => {
+		store.emitter.emit = (eventLabel,args) => {
 			Promise.all(connections.map(function (conn) {
 				return new Promise(function(resolve) {
 					// notify clients on trigger
-					conn.write(JSON.stringify(outbound));
+					conn.write(JSON.stringify(args[0]));
 					// notify other Reflux Stores on the server
-					_emit.apply(store.emitter, [].concat(eventLabel,outbound));
+					_emit.call(store.emitter,eventLabel,args);
 					resolve();
 				});
 			}));

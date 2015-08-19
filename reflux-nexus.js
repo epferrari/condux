@@ -36,7 +36,7 @@ function _ServerNexus(service, multiplexer) {
 	this.REGISTRATION_REQUESTS.on("connection", function (conn) {
 		conn.on('data', function (data) {
 			_this.registerChannel(data.topic);
-			conn.write({ topic: data.topic, status: "approved" });
+			conn.write(JSON.stringify({ topic: data.topic, status: "approved" }));
 		});
 	});
 

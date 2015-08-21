@@ -20,6 +20,7 @@ function _ServerNexus(service, multiplexer) {
 	this.service = service;
 	this.multiplexer = multiplexer || new Multiplexer.MultiplexServer(this.service);
 
+	// enable client Frequencies to register themselves
 	this.REGISTRATION_REQUESTS = this.multiplexer.registerChannel('REGISTRATION_REQUESTS');
 	this.REGISTRATION_REQUESTS.on("connection",(conn) => {
 		conn.on('data', (data) => {
@@ -87,7 +88,7 @@ _ServerNexus.prototype = {
 		var connections,channel,store,_emit;
 
 		store = Reflux.createStore(storeDefinition);
-		isFunction(store.bootstrap) || (store.bootstrap = function() {
+		isFunction(store.hydrate) || (store.hydrate = function() {
 			return {};
 		});
 
@@ -95,7 +96,8 @@ _ServerNexus.prototype = {
 		channel = this.registerChannel(topic);
 		channel.on('connection', (conn) => {
 			// hydrate the client with an initial dataset, if `hydrate` is defined
-			conn.write(JSON.stringify(store.bootstrap()));
+			//conn.write(JSON.stringify(store.bootstrap()));
+			conn.conn.write('conn',topic,JSON.stringify(store.hydrate()));
 			// add connection to connection collection
 			connections.push(conn);
 			// cleanup store listener on close of connection
@@ -129,6 +131,16 @@ _ServerNexus.prototype = {
 	}
 };
 
+
+/**
+* use Adapter when your app already has a sockjs service
+*	and possibly an existing multiplex instance
+*/
+ServerNexus.Adapter = function Adapter(service, multiplexer) {
+	return new _ServerNexus(service, multiplexer);
+};
+
+
 /**
 * wrapper that will create a new Nexus with a new sockjs service and a new multiplexer
 */
@@ -138,12 +150,6 @@ function ServerNexus(options) {
 	return new _ServerNexus(service);
 }
 
-/**
-* use Adapter when your app already has a sockjs service
-*	and possibly an existing multiplex instance
-*/
-ServerNexus.Adapter = function Adapter(service, multiplexer) {
-	return new _ServerNexus(service, multiplexer);
-};
+
 
 export default ServerNexus;

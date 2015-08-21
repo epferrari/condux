@@ -111,7 +111,7 @@ _ServerNexus.prototype = {
 		channel.on('connection', function (conn) {
 			// hydrate the client with an initial dataset, if `hydrate` is defined
 			//conn.write(JSON.stringify(store.bootstrap()));
-			conn.conn.write('conn', topic, JSON.stringify(store.hydrate()));
+			conn.conn.write(['conn', topic, JSON.stringify(store.hydrate())].join(","));
 			// add connection to connection collection
 			connections.push(conn);
 			// cleanup store listener on close of connection

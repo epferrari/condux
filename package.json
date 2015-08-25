@@ -35,8 +35,7 @@
 	},
 	"dependencies": {
 		"lodash": "^3.10.1",
-		"sockjs": "^0.3.15",
-		"sockjs-client": "^1.0.3",
+		"sockjs": "git+https://github.com/epferrari/sockjs-node.git#feature/xhrMod",
 		"websocket-multiplex": "^0.1.0"
 	}
 }

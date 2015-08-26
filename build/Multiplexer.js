@@ -59,9 +59,10 @@ function Multiplexer(service) {
 
 		// close the client connection destroy all subscribers
 		conn.on('close', function () {
-			for (topic in channels) {
-				channels[topic].emit('close');
-			}
+			var topics = Object.keys(channels);
+			topics.forEach(function (topic) {
+				return channels[topic].emit('close');
+			});
 			channels = {};
 		});
 	});

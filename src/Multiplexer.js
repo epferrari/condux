@@ -45,10 +45,9 @@ function Multiplexer(service) {
 			});
 
 			// close the client connection destroy all subscribers
-			conn.on('close', function() {
-				for(topic in channels) {
-					channels[topic].emit('close');
-				}
+			conn.on('close', function(){
+				var topics = Object.keys(channels);
+				topics.forEach( topic => channels[topic].emit('close') );
 				channels = {};
 			});
 	});

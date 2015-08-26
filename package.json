@@ -1,42 +1,42 @@
 {
-  "name": "reflux-nexus",
-  "version": "0.0.1",
-  "description": "An over-the-wire implementation of Reflux.js using Sock.js",
-  "main": "reflux-nexus.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ./src --ext .js",
-    "preclean": "npm run lint",
-    "clean": "rm -rf ./lib/*",
-    "predist": "npm run clean",
-    "dist": "babel ./src/Nexus.js -o ./reflux-nexus.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://epferrari@github.com/epferrari/reflux-nexus.git"
-  },
-  "keywords": [
-    "Reflux",
-    "React",
-    "websocket",
-    "bi-directional",
-    "Sockjs"
-  ],
-  "author": "Ethan Ferrari",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/epferrari/reflux-nexus/issues"
-  },
-  "homepage": "https://github.com/epferrari/reflux-nexus#readme",
-  "devDependencies": {
-    "babel": "^5.8.21",
-    "babel-eslint": "^4.0.10",
-    "eslint": "^1.1.0"
-  },
-  "dependencies": {
-    "events": "^1.0.2",
-    "lodash": "^3.10.1",
-    "sockjs": "git+https://github.com/epferrari/sockjs-node.git#feature/xhrMod",
-    "stream": "0.0.2"
-  }
+	"name": "reflux-nexus",
+	"version": "0.0.1",
+	"description": "An over-the-wire implementation of Reflux.js using Sock.js",
+	"main": "reflux-nexus.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"lint": "eslint ./src --ext .js",
+		"preclean": "npm run lint",
+		"clean": "rm -rf ./lib/*",
+		"prebuild": "npm run clean",
+		"build": "babel ./src --out-dir ./build"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://epferrari@github.com/epferrari/reflux-nexus.git"
+	},
+	"keywords": [
+		"Reflux",
+		"React",
+		"websocket",
+		"bi-directional",
+		"Sockjs"
+	],
+	"author": "Ethan Ferrari",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/epferrari/reflux-nexus/issues"
+	},
+	"homepage": "https://github.com/epferrari/reflux-nexus#readme",
+	"devDependencies": {
+		"babel": "^5.8.21",
+		"babel-eslint": "^4.0.10",
+		"eslint": "^1.1.0"
+	},
+	"dependencies": {
+		"events": "^1.0.2",
+		"lodash": "^3.10.1",
+		"sockjs": "git+https://github.com/epferrari/sockjs-node.git#feature/xhrMod",
+		"stream": "0.0.2"
+	}
 }

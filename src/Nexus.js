@@ -42,7 +42,7 @@ function _ServerNexus(service) {
 
 	// create store to notify clients when a channel is created,
 	// in case they have subscribed to a channel that's not available yet
-	var _REGISTER = this.createStore("/REGISTRATIONS",{
+	var _register = this.createStore("/REGISTRATIONS",{
 		init(){
 			this.listenTo(channelRegistered,this.onChannelRegistered);
 		},
@@ -58,9 +58,9 @@ function _ServerNexus(service) {
 	});
 
 	// create a channel to handle all client actions created by `ClientNexusInstance.createAction()`
-	var CLIENT_ACTIONS = multiplexer.registerChannel('/CLIENT_ACTIONS');
+	var _clientActions = multiplexer.registerChannel('/CLIENT_ACTIONS');
 
-	CLIENT_ACTIONS.on('connection',(conn) => {
+	_clientActions.on('connection',(conn) => {
 		conn.on('data',(data) => {
 			data = JSON.parse(data);
 			var action;
@@ -121,8 +121,11 @@ _ServerNexus.prototype = {
 			conn.conn.write([ 'conn',topic,JSON.stringify(hydration) ].join(","));
 
 			// handle individual client requests to the Datastore, like for a data refresh
-			conn.on('request', constraints => {
-				var response = store.handleRequest(constraints);
+			conn.on('request', request => {
+				let response = {
+					request_token: request.request_token,
+					body: store.handleRequest(request.constraints)
+				};
 				conn.conn.write([ 'res',topic,JSON.stringify(response) ].join(','));
 			});
 

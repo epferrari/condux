@@ -74,7 +74,6 @@ function _ServerNexus(service) {
 
 	_clientActions.on('connection', function (conn) {
 		conn.on('data', function (data) {
-			data = JSON.parse(data);
 			var action;
 			var actionType = data.actionType;
 			// set off Reflux action on any matching action from the client

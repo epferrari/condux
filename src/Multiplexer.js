@@ -32,10 +32,10 @@ function Multiplexer(service) {
 							sub.emit('close');
 							break;
 						case 'msg':
-							sub.emit('data', payload);
+							sub.emit('data', JSON.parse(payload));
 							break;
 						case 'req':
-							sub.emit('request',payload);
+							sub.emit('request',JSON.parse(payload));
 							break;
 					}
 				} else if(type === "sub"){

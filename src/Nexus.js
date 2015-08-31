@@ -141,11 +141,11 @@ _ServerNexus.prototype = {
 				return new Promise(function(resolve) {
 					// notify clients on trigger
 					conn.write(JSON.stringify(args[0]));
-					// notify other Reflux Stores on the server
-					_emit.call(store.emitter,eventLabel,args);
 					resolve();
 				});
 			}));
+			// notify other Reflux Stores on the server
+			_emit.call(store.emitter,eventLabel,args);
 		};
 
 		return store;

@@ -1,6 +1,6 @@
 {
 	"name": "reflux-nexus",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"description": "An over-the-wire implementation of Reflux.js using Sock.js",
 	"main": "reflux-nexus.js",
 	"scripts": {

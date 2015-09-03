@@ -4,15 +4,43 @@ Object.defineProperty(exports, '__esModule', {
 	value: true
 });
 var Reflux = require('reflux');
-
-var _require = require('lodash');
-
-var pull = _require.pull;
-var merge = _require.merge;
-
+var merge = require('object-assign');
 var sockjs = require('sockjs');
-//var Multiplexer = require('websocket-multiplex');
 var Multiplexer = require('./Multiplexer.js');
+
+/**
+@since 0.2.3
+@desc use this instead of hauling lodash around. She's heavy
+*/
+function pull(_x, _x2) {
+	var _again = true;
+
+	_function: while (_again) {
+		var arr = _x,
+		    itm = _x2;
+		itmIdx = undefined;
+		_again = false;
+
+		var itmIdx = arr.indexOf(itm);
+		arr.splice(itmIdx, 1);
+		if (arr.indexOf(itm) !== -1) {
+			_x = arr;
+			_x2 = itm;
+			_again = true;
+			continue _function;
+		} else {
+			return arr;
+		}
+	}
+};
+
+/**
+@since 0.2.3
+@desc use this instead of hauling lodash around. She's heavy
+*/
+function isFn(fn) {
+	return ({}).toString.call(fn).match(/\s([a-zA-Z]+)/)[1].toLowerCase() === "function";
+}
 
 var channelRegistered = Reflux.createAction();
 // dummy proto methods for DataStores
@@ -135,11 +163,21 @@ _ServerNexus.prototype = {
 
 			// handle individual client requests to the Datastore, like for a data refresh
 			conn.on('request', function (request) {
-				var response = {
-					request_token: request.request_token,
-					body: store.handleRequest(request.constraints)
-				};
-				conn.conn.write(['res', topic, JSON.stringify(response)].join(','));
+				var response = { request_token: request.request_token };
+
+				// duck-type to see if handleRequest returned a promise
+				var maybePromise = store.handleRequest(request.constraints);
+				if (isFn(maybePromise) && maybePromise.then && maybePromise.then.call && maybePromise.then.apply) {
+					maybePromise.then(function (result) {
+						response.body = result;
+						conn.conn.write(['res', topic, JSON.stringify(response)].join(','));
+					}, function (error) {
+						response.error = error, conn.conn.write(['err', topic, JSON.stringify(response)].join(','));
+					});
+				} else {
+					response.body = maybePromise;
+					conn.conn.write(['res', topic, JSON.stringify(response)].join(','));
+				}
 			});
 
 			// cleanup store listener on close of connection

@@ -7,7 +7,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "eslint ./src --ext .js",
 		"preclean": "npm run lint",
-		"clean": "rm -rf ./lib/*",
+		"clean": "rm -rf ./build/*",
 		"prebuild": "npm run clean",
 		"build": "babel ./src --out-dir ./build"
 	},
@@ -35,7 +35,7 @@
 	},
 	"dependencies": {
 		"events": "^1.0.2",
-		"lodash": "^3.10.1",
+		"object-assign": "^4.0.1",
 		"sockjs": "git+https://github.com/epferrari/sockjs-node.git#feature/xhrMod",
 		"stream": "0.0.2"
 	}

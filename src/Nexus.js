@@ -1,8 +1,26 @@
 var Reflux = require('reflux');
-var {pull,merge} = require('lodash');
+var merge = require('object-assign');
 var sockjs = require('sockjs');
-//var Multiplexer = require('websocket-multiplex');
 var Multiplexer = require('./Multiplexer.js');
+
+
+/**
+@since 0.2.3
+@desc use this instead of hauling lodash around. She's heavy
+*/
+function pull(arr,itm){
+	var itmIdx = arr.indexOf(itm);
+	arr.splice(itmIdx,1);
+	return (arr.indexOf(itm) !== -1) ? pull(arr,itm) : arr;
+};
+
+/**
+@since 0.2.3
+@desc use this instead of hauling lodash around. She's heavy
+*/
+function isFn(fn){
+	return ({}).toString.call(fn).match(/\s([a-zA-Z]+)/)[1].toLowerCase() === "function";
+}
 
 
 
@@ -121,15 +139,28 @@ _ServerNexus.prototype = {
 
 			// handle individual client requests to the Datastore, like for a data refresh
 			conn.on('request', request => {
-				let response = {
-					request_token: request.request_token,
-					body: store.handleRequest(request.constraints)
-				};
-				conn.conn.write([ 'res',topic,JSON.stringify(response) ].join(','));
+				let response = {request_token: request.request_token};
+
+				// duck-type to see if handleRequest returned a promise
+				var maybePromise = store.handleRequest(request.constraints);
+				if(isFn(maybePromise) && maybePromise.then && maybePromise.then.call && maybePromise.then.apply){
+					maybePromise.then(
+						result => {
+							response.body = result;
+							conn.conn.write(['res',topic,JSON.stringify(response)].join(','));
+						},
+						error => {
+							response.error = error,
+							conn.conn.write(['err',topic,JSON.stringify(response)].join(','));
+						});
+				}else{
+					response.body = maybePromise;
+					conn.conn.write(['res',topic,JSON.stringify(response)].join(','));
+				}
 			});
 
 			// cleanup store listener on close of connection
-			conn.on( 'close', () => pull(connections, conn) );
+			conn.on('close', () => pull(connections, conn) );
 		});
 
 		// cache original emit method

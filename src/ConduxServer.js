@@ -44,7 +44,7 @@ Reflux.StoreMethods.handleRequest = function(constraints){ return {}; };
 * @private
 */
 
-function _ConduxServer(service) {
+function ConduxServer(service) {
 	this.registered_actions = {};
 	this.service = service;
 
@@ -91,21 +91,21 @@ function _ConduxServer(service) {
 	});
 }
 
-_ConduxServer.prototype = {
+ConduxServer.prototype = {
+
 
 	/**
-	* @name onNewChannel
+	* @desc convenience method for `<SockJS>.installHandlers(server,options)`
 	* @instance
 	* @memberof Condux
-	* @desc dummy hook for when a new channel is created
-	* @param {string} topic - the name of the newly created channel
+	* @param {object} server - http server (express, etc)
+	* @param {object} options - passes options as <SockJS>.installHandlers' second argument
 	*/
-	onNewChannel(topic){
-		return;
+	attach(server,options) {
+		this.service.installHandlers(server,options);
 	},
 
 	/**
-	* @name createAction
 	* @desc wrapper for `Reflux.createAction()` that ensures actions are registered with the
 	* Nexus instance. The `ConduxServer` instance acts as a dispatch for all client actions
 	* registered with it.
@@ -122,7 +122,6 @@ _ConduxServer.prototype = {
 	},
 
 	/**
-	* @name createActions
 	* @instance
 	* @memberof Condux
 	* @desc wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
@@ -136,12 +135,12 @@ _ConduxServer.prototype = {
 	},
 
 	/**
-	* @name createStore
 	* @instance
 	* @memberof Condux
 	* @desc wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
 	* @param {string} topic - the name of the channel/frequency the datastore triggers to
 	* @param {object} storeDefinition - store methods object, like the one passed to `Reflux.createStore`
+	* @returns {object} a Reflux store
 	*/
 	createStore(topic,storeDefinition) {
 
@@ -205,14 +204,16 @@ _ConduxServer.prototype = {
 		return store;
 	},
 
+
 	/**
-	* @desc convenience method for `<SockJS>.installHandlers(server,options)`
 	* @instance
 	* @memberof Condux
+	* @desc dummy hook for when a new channel is created
+	* @param {string} topic - the name of the newly created channel
 	*/
-	attach(server,options) {
-		this.service.installHandlers(server,options);
-	}
+	onNewChannel(topic){
+		return;
+	},
 };
 
 
@@ -220,17 +221,18 @@ _ConduxServer.prototype = {
 
 
 /**
-* A singleton multiplexing websocket service for Reflux using sockjs.
-* Builds a `CLIENT_ACTION` channel that listens for any client actions registered
-* on the server using `<ConduxServer>.createAction(<action>)` or `<ConduxServer>.createActions(<actions>)`.
-* Actions __must__ be symmetrically mirrored on the client using the static methods
+* An over-the-wire unidirectional data-flow architecture utilizing Reflux as the flux pattern implementation and SockJS as the websocket implementation.
+* In conjunction with [condux-client](https:github.com/epferrari/condux-client), a Condux nexus listens to client actions via its private `CLIENT_ACTIONS`
+* channel. Client actions are registered using `<ConduxServer>.createAction` or `<ConduxServer>.createActions`.
+* Actions __must__ be symmetrically mirrored on the client using `<ConduxClient>`'s methods
 * `<ConduxClient>.createAction` and `<ConduxClient>.createActions`
 * @name Condux
+* @kind function
 */
-function ConduxServer(options) {
+function Condux(options) {
 	options = merge({},{sockjs_url: 'http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js',prefix: "/condux"},options);
 	var service = sockjs.createServer(options);
-	return new _ConduxServer(service);
+	return new ConduxServer(service);
 }
 
 
@@ -238,11 +240,12 @@ function ConduxServer(options) {
 * use Adapter when your app already has a sockjs service
 * @name Adapter
 * @memberof Condux
+* @param {object} service - a SockJS server instance created elsewhere with `<SockJS>.createServer`
 */
-ConduxServer.Adapter = function Adapter(service) {
-	return new _ConduxServer(service);
+Condux.Adapter = function Adapter(service) {
+	return new ConduxServer(service);
 };
 
 
 
-export default ConduxServer;
+export default Condux;

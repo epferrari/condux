@@ -1,46 +1,47 @@
 <a name="Condux"></a>
-## Condux
-A singleton multiplexing websocket service for Reflux using sockjs.
-Builds a `CLIENT_ACTION` channel that listens for any client actions registered
-on the server using `<ConduxServer>.createAction(<action>)` or `<ConduxServer>.createActions(<actions>)`.
-Actions __must__ be symmetrically mirrored on the client using the static methods
+## Condux()
+An over-the-wire unidirectional data-flow architecture utilizing Reflux as the flux pattern implementation and SockJS as the websocket implementation.
+In conjunction with [condux-client](https:github.com/epferrari/condux-client), a Condux nexus listens to client actions via its private `CLIENT_ACTIONS`
+channel. Client actions are registered using `<ConduxServer>.createAction` or `<ConduxServer>.createActions`.
+Actions __must__ be symmetrically mirrored on the client using `<ConduxClient>`'s methods
 `<ConduxClient>.createAction` and `<ConduxClient>.createActions`
 
-**Kind**: global variable  
+**Kind**: global function  
 
-* [Condux](#Condux)
+* [Condux()](#Condux)
   * _instance_
-    * [.onNewChannel](#Condux+onNewChannel)
-    * [.createAction](#Condux+createAction)
-    * [.createActions](#Condux+createActions)
-    * [.createStore](#Condux+createStore)
-    * [.attach()](#Condux+attach)
+    * [.attach(server, options)](#Condux+attach)
+    * [.createAction(actionName, options)](#Condux+createAction)
+    * [.createActions(actionNames)](#Condux+createActions)
+    * [.createStore(topic, storeDefinition)](#Condux+createStore) ⇒ <code>object</code>
+    * [.onNewChannel(topic)](#Condux+onNewChannel)
   * _static_
     * [.Adapter](#Condux.Adapter)
 
 
 -
 
-<a name="Condux+onNewChannel"></a>
-### condux.onNewChannel
-dummy hook for when a new channel is created
+<a name="Condux+attach"></a>
+### condux.attach(server, options)
+convenience method for `<SockJS>.installHandlers(server,options)`
 
-**Kind**: instance property of <code>[Condux](#Condux)</code>  
+**Kind**: instance method of <code>[Condux](#Condux)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| topic | <code>string</code> | the name of the newly created channel |
+| server | <code>object</code> | http server (express, etc) |
+| options | <code>object</code> | passes options as <SockJS>.installHandlers' second argument |
 
 
 -
 
 <a name="Condux+createAction"></a>
-### condux.createAction
+### condux.createAction(actionName, options)
 wrapper for `Reflux.createAction()` that ensures actions are registered with the
 Nexus instance. The `ConduxServer` instance acts as a dispatch for all client actions
 registered with it.
 
-**Kind**: instance property of <code>[Condux](#Condux)</code>  
+**Kind**: instance method of <code>[Condux](#Condux)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -51,10 +52,10 @@ registered with it.
 -
 
 <a name="Condux+createActions"></a>
-### condux.createActions
+### condux.createActions(actionNames)
 wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
 
-**Kind**: instance property of <code>[Condux](#Condux)</code>  
+**Kind**: instance method of <code>[Condux](#Condux)</code>  
 
 | Param | Type |
 | --- | --- |
@@ -64,10 +65,11 @@ wrapper for Reflux.createActions() that ensures each Action is registered on the
 -
 
 <a name="Condux+createStore"></a>
-### condux.createStore
+### condux.createStore(topic, storeDefinition) ⇒ <code>object</code>
 wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
 
-**Kind**: instance property of <code>[Condux](#Condux)</code>  
+**Kind**: instance method of <code>[Condux](#Condux)</code>  
+**Returns**: <code>object</code> - a Reflux store  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -77,11 +79,16 @@ wrapper for Reflux.createActions() that ensures each Action is registered on the
 
 -
 
-<a name="Condux+attach"></a>
-### condux.attach()
-convenience method for `<SockJS>.installHandlers(server,options)`
+<a name="Condux+onNewChannel"></a>
+### condux.onNewChannel(topic)
+dummy hook for when a new channel is created
 
 **Kind**: instance method of <code>[Condux](#Condux)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| topic | <code>string</code> | the name of the newly created channel |
+
 
 -
 
@@ -90,6 +97,11 @@ convenience method for `<SockJS>.installHandlers(server,options)`
 use Adapter when your app already has a sockjs service
 
 **Kind**: static property of <code>[Condux](#Condux)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| service | <code>object</code> | a SockJS server instance created elsewhere with `<SockJS>.createServer` |
+
 
 -
 

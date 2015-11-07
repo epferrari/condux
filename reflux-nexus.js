@@ -1,1 +1,1 @@
-module.exports = require('./build/Nexus.js');
+module.exports = require('./lib/Nexus.js');

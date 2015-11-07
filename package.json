@@ -1,8 +1,8 @@
 {
-	"name": "reflux-nexus",
+	"name": "condux",
 	"version": "0.2.3",
 	"description": "An over-the-wire implementation of Reflux.js using Sock.js",
-	"main": "reflux-nexus.js",
+	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "eslint ./src --ext .js",
@@ -15,7 +15,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://epferrari@github.com/epferrari/reflux-nexus.git"
+		"url": "git+https://epferrari@github.com/epferrari/condux.git"
 	},
 	"keywords": [
 		"Reflux",
@@ -27,9 +27,9 @@
 	"author": "Ethan Ferrari",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/epferrari/reflux-nexus/issues"
+		"url": "https://github.com/epferrari/condux/issues"
 	},
-	"homepage": "https://github.com/epferrari/reflux-nexus#readme",
+	"homepage": "https://github.com/epferrari/condux#readme",
 	"devDependencies": {
 		"babel": "^5.8.21",
 		"babel-eslint": "^4.0.10",

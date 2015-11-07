@@ -1,7 +1,7 @@
 {
 	"name": "condux",
-	"version": "0.2.3",
-	"description": "An over-the-wire implementation of Reflux.js using Sock.js",
+	"version": "0.4.0",
+	"description": "An over-the-wire unidirectional data-flow architecture utilizing Reflux as the flux pattern implementation and SockJS as the websocket implementation.",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
@@ -18,11 +18,13 @@
 		"url": "git+https://epferrari@github.com/epferrari/condux.git"
 	},
 	"keywords": [
-		"Reflux",
-		"React",
+		"reflux",
+		"react",
+		"flux",
+		"reactive",
 		"websocket",
 		"bi-directional",
-		"Sockjs"
+		"sockjs"
 	],
 	"author": "Ethan Ferrari",
 	"license": "MIT",

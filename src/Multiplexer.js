@@ -1,3 +1,5 @@
+/* inspired and adapted from https://github.com/sockjs/websocket-multiplex */
+
 import Channel from './Channel.js';
 import {EventEmitter} from 'events';
 

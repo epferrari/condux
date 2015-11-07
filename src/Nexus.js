@@ -90,7 +90,7 @@ function _ServerNexus(service) {
 
 _ServerNexus.prototype = {
 
-	// dummy
+	// dummy hook
 	onNewChannel(topic){
 		return;
 	},

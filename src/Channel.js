@@ -1,3 +1,5 @@
+/* inspired and adapted from https://github.com/sockjs/websocket-multiplex */
+
 import {Stream} from 'stream';
 
 var Channel = function(conn,topic,channels) {

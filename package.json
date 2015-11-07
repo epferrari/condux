@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "eslint ./src --ext .js",
-		"docs": "jsdoc2md ./lib/*.js  --global-index-format none --separators true > README.md",
+		"docs": "jsdoc2md ./lib/*.js  --global-index-format none --separators true > ./docs/API.md && cat ./docs/index.md ./docs/API.md > README.md",
 		"preclean": "npm run lint",
 		"clean": "rm -rf ./lib/*",
 		"prebuild": "npm run clean",

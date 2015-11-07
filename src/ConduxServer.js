@@ -34,8 +34,7 @@ Reflux.StoreMethods.handleRequest = function(constraints){ return {}; };
 
 
 /**
-* A singleton multiplexing websocket service for Reflux using sockjs.
-* Builds a `CLIENT_ACTION` channel that listens for any client actions registered
+* Builds a Condux Server nexus, and automatically creates a `CLIENT_ACTION` channel to listen for any client actions registered
 * on the server using `<ConduxServer>.createAction(<action>)` or `<ConduxServer>.createActions(<actions>)`.
 * Actions __must__ be symmetrically mirrored on the client using the static methods
 * `<ConduxClient>.createAction` and `<ConduxClient>.createActions`
@@ -221,8 +220,7 @@ ConduxServer.prototype = {
 
 
 /**
-* An over-the-wire unidirectional data-flow architecture utilizing Reflux as the flux pattern implementation and SockJS as the websocket implementation.
-* In conjunction with [condux-client](https:github.com/epferrari/condux-client), a Condux nexus listens to client actions via its private `CLIENT_ACTIONS`
+* Builds and returns a Condux Server. A Condux Server listens to client actions via its private `CLIENT_ACTIONS`
 * channel. Client actions are registered using `<ConduxServer>.createAction` or `<ConduxServer>.createActions`.
 * Actions __must__ be symmetrically mirrored on the client using `<ConduxClient>`'s methods
 * `<ConduxClient>.createAction` and `<ConduxClient>.createActions`

@@ -5,6 +5,7 @@ var Multiplexer = require('./Multiplexer.js');
 
 
 /**
+@private
 @since 0.2.3
 @desc use this instead of hauling lodash around. She's heavy
 */
@@ -15,6 +16,7 @@ function pull(arr,itm){
 };
 
 /**
+@private
 @since 0.2.3
 @desc use this instead of hauling lodash around. She's heavy
 */
@@ -32,16 +34,17 @@ Reflux.StoreMethods.handleRequest = function(constraints){ return {}; };
 
 
 /**
-* A singleton multiplexing websocket service for Reflux using sockjs
-* builds a `CLIENT_ACTION` channel that listens for any client actions registered
-* on the server using `<ServerNexus>.createAction(<action>)` or `<ServerNexus>.createActions(<actions>)`.
+* A singleton multiplexing websocket service for Reflux using sockjs.
+* Builds a `CLIENT_ACTION` channel that listens for any client actions registered
+* on the server using `<ConduxServer>.createAction(<action>)` or `<ConduxServer>.createActions(<actions>)`.
 * Actions __must__ be symmetrically mirrored on the client using the static methods
-* `<ClientNexus>.createAction` and `<ClientNexus>.createActions`
+* `<ConduxClient>.createAction` and `<ConduxClient>.createActions`
 *
 * @param {obj} service - sockjs service
+* @private
 */
 
-function _ServerNexus(service) {
+function _ConduxServer(service) {
 	this.registered_actions = {};
 	this.service = service;
 
@@ -75,7 +78,7 @@ function _ServerNexus(service) {
 		}
 	});
 
-	// create a channel to handle all client actions created by `ClientNexusInstance.createAction()`
+	// create a channel to handle all client actions created by `<ConduxClient>.createAction()`
 	var _clientActions = multiplexer.registerChannel('/CLIENT_ACTIONS');
 
 	_clientActions.on('connection',(conn) => {
@@ -88,18 +91,27 @@ function _ServerNexus(service) {
 	});
 }
 
-_ServerNexus.prototype = {
+_ConduxServer.prototype = {
 
-	// dummy hook
+	/**
+	* @name onNewChannel
+	* @instance
+	* @memberof Condux
+	* @desc dummy hook for when a new channel is created
+	* @param {string} topic - the name of the newly created channel
+	*/
 	onNewChannel(topic){
 		return;
 	},
 
 	/**
-	* wrapper for Reflux.createAction() that ensures actions are registered with the
-	* Nexus instance. Each ServerNexus instance acts as a Dispatch for all client actions
+	* @name createAction
+	* @desc wrapper for `Reflux.createAction()` that ensures actions are registered with the
+	* Nexus instance. The `ConduxServer` instance acts as a dispatch for all client actions
 	* registered with it.
 	*
+	* @instance
+	* @memberof Condux
 	* @param {string} actionName
 	* @param {object} options - Reflux action options object
 	*/
@@ -110,7 +122,10 @@ _ServerNexus.prototype = {
 	},
 
 	/**
-	* wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
+	* @name createActions
+	* @instance
+	* @memberof Condux
+	* @desc wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
 	* @param {array} actionNames
 	*/
 	createActions(actionNames) {
@@ -120,6 +135,14 @@ _ServerNexus.prototype = {
 		},{});
 	},
 
+	/**
+	* @name createStore
+	* @instance
+	* @memberof Condux
+	* @desc wrapper for Reflux.createActions() that ensures each Action is registered on the server nexus
+	* @param {string} topic - the name of the channel/frequency the datastore triggers to
+	* @param {object} storeDefinition - store methods object, like the one passed to `Reflux.createStore`
+	*/
 	createStore(topic,storeDefinition) {
 
 		var connections,channel,store,_emit;
@@ -175,7 +198,7 @@ _ServerNexus.prototype = {
 					resolve();
 				});
 			}));
-			// notify other Reflux Stores on the server
+			// notify local Reflux Stores on the server
 			_emit.call(store.emitter,eventLabel,args);
 		};
 
@@ -183,7 +206,9 @@ _ServerNexus.prototype = {
 	},
 
 	/**
-	* @desc convenience method for `this.service.installHandlers(server,options)`
+	* @desc convenience method for `<SockJS>.installHandlers(server,options)`
+	* @instance
+	* @memberof Condux
 	*/
 	attach(server,options) {
 		this.service.installHandlers(server,options);
@@ -195,22 +220,29 @@ _ServerNexus.prototype = {
 
 
 /**
-* wrapper that will create a new Nexus with a new sockjs service and a new multiplexer
+* A singleton multiplexing websocket service for Reflux using sockjs.
+* Builds a `CLIENT_ACTION` channel that listens for any client actions registered
+* on the server using `<ConduxServer>.createAction(<action>)` or `<ConduxServer>.createActions(<actions>)`.
+* Actions __must__ be symmetrically mirrored on the client using the static methods
+* `<ConduxClient>.createAction` and `<ConduxClient>.createActions`
+* @name Condux
 */
-function Nexus(options) {
-	options = merge({},{sockjs_url: 'http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js',prefix: "/reflux-nexus"},options);
+function ConduxServer(options) {
+	options = merge({},{sockjs_url: 'http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js',prefix: "/condux"},options);
 	var service = sockjs.createServer(options);
-	return new _ServerNexus(service);
+	return new _ConduxServer(service);
 }
 
 
 /**
 * use Adapter when your app already has a sockjs service
+* @name Adapter
+* @memberof Condux
 */
-Nexus.Adapter = function Adapter(service) {
-	return new _ServerNexus(service);
+ConduxServer.Adapter = function Adapter(service) {
+	return new _ConduxServer(service);
 };
 
 
 
-export default Nexus;
+export default ConduxServer;

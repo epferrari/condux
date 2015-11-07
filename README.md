@@ -1,4 +1,4 @@
-## Condux
+# Condux
 
 An over-the-wire unidirectional data-flow architecture utilizing Reflux as the flux pattern implementation and SockJS as the websocket implementation. Use conjunction with [condux-client](https:github.com/epferrari/condux-client).
 
@@ -7,7 +7,8 @@ An over-the-wire unidirectional data-flow architecture utilizing Reflux as the f
 	npm install condux --save
 
 
-#### API<a name="Condux"></a>
+#### API
+<a name="Condux"></a>
 ## Condux()
 Builds and returns a Condux Server. A Condux Server listens to client actions via its private `CLIENT_ACTIONS`
 channel. Client actions are registered using `<ConduxServer>.createAction` or `<ConduxServer>.createActions`.
